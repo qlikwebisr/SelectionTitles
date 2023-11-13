@@ -14,7 +14,7 @@ function ( $,qlik) {
 			type: "items",
 			component: "accordion",
 			items: {
-				appearance: 
+				appearance:
 				{
 					ref: "",
 					label: "SelectionTitles - Shows selected field's title", //Get Name in settings panel
@@ -46,7 +46,7 @@ function ( $,qlik) {
 
 				});
 
-				//console.log('dimensions',dimensions);
+			    //console.log('dimensions',dimensions);
 
 				qlik.currApp(this).getList('SelectionObject', function(reply) {
 
@@ -55,7 +55,14 @@ function ( $,qlik) {
 
 						//Get selected tabs nodes - array of DOM objects from li
 						//let selected_items = document.querySelectorAll('.qvt-selections ul.list li.item .text-wrap .name');
-						let selected_items_parent = document.querySelectorAll('.qvt-selections ul.list li.item');
+
+						//old version 
+						//let selected_items_parent = document.querySelectorAll('.qvt-selections ul.list li.item');
+						console.log('qvt-selections ul.list', document.querySelectorAll('.qvt-selections ul.list li.item').length);
+						console.log('div[tid="qs-sub-toolbar"]', document.querySelectorAll('div[tid="qs-sub-toolbar"] div[data-testid="qs-sub-toolbar-selection-list"] > div').length);
+
+						//Aug 2023 version
+						let selected_items_parent = (document.querySelectorAll('.qvt-selections ul.list li.item').length > 0 ) ? document.querySelectorAll('.qvt-selections ul.list li.item') : document.querySelectorAll('div[tid="qs-sub-toolbar"] div[data-testid="qs-sub-toolbar-selection-list"] > div');
 
 						//console.log('selected_items',selected_items);
 						//console.log('selected_items_parent',selected_items_parent);
@@ -70,20 +77,34 @@ function ( $,qlik) {
 						for (let i = 0; i < selected_items_parent.length; i++) {
 
 							//get value from selection tab
-							let selected_name = selected_items_parent[i].querySelector('.text .text-wrap .name ').innerHTML;
+							
+							//Aug 2023 qlik version
+							// 	let selected_name = selected_items_parent[i].querySelector('.current-selections-item p[tid="selection-name"]').innerHTML;
+							//old qlik version 
+							// 	let selected_name = selected_items_parent[i].querySelector('.text .text-wrap .name ').innerHTML;
 
-							//console.log('i',i);
-							//console.log('selected_items_parent_node',selected_name);
+							if(selected_items_parent[i].querySelector('.text .text-wrap .name ') == null){ //Aug 2023 qlik version
+ 
+								//console.log('new version');
 
-							//get name of the field from dimensions object
-							let new_selected_name =  checkDimension(dimensions, selected_name);
+								let selected_name = selected_items_parent[i].querySelector('.current-selections-item p[tid="selection-name"]').innerHTML;
 
-							//console.log('new_selected_name',new_selected_name);
-                            //change the tab value
-							if (typeof(new_selected_name) != 'undefined') {
+								let new_selected_name = checkDimension(dimensions, selected_name);
 
-								selected_items_parent[i].querySelector('.text .text-wrap .name ').innerHTML = new_selected_name;
+								if (typeof(new_selected_name) != 'undefined') {
+									selected_items_parent[i].querySelector('.current-selections-item p[tid="selection-name"]').innerHTML = new_selected_name;
+								}
 
+							} else { //old qlik version 
+								//console.log('old version');
+
+								let selected_name = selected_items_parent[i].querySelector('.text .text-wrap .name').innerHTML;
+
+								let new_selected_name = checkDimension(dimensions, selected_name);
+
+								if (typeof(new_selected_name) != 'undefined') {
+									selected_items_parent[i].querySelector('.text .text-wrap .name').innerHTML = new_selected_name;
+								}
 							}
 							
 						} //for (let i = 0; i < selected_values.length; i++) {
